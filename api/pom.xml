@@ -50,6 +50,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>dev.folia</groupId>
+            <artifactId>folia-api</artifactId>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>de.rapha149.signgui</groupId>
             <artifactId>signgui-wrapper</artifactId>
             <version>${project.parent.version}</version>

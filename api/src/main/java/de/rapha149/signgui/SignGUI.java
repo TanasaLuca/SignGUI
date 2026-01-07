@@ -3,6 +3,7 @@ package de.rapha149.signgui;
 import de.rapha149.signgui.SignGUIAction.SignGUIActionInfo;
 import de.rapha149.signgui.exception.SignGUIException;
 import de.rapha149.signgui.exception.SignGUIVersionException;
+import de.rapha149.signgui.util.scheduler.SchedulerFactory;
 import de.rapha149.signgui.version.VersionMatcher;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -107,10 +108,12 @@ public class SignGUI {
                         action.execute(this, signEditor, player);
                 };
 
-                if (callHandlerSynchronously)
-                    Bukkit.getScheduler().runTask(plugin, runnable);
-                else
+                if (callHandlerSynchronously) {
+                    // Use platform-aware scheduler that works on Folia, CanvasMC, Archlight, and Bukkit
+                    SchedulerFactory.getScheduler().runTask(plugin, player, runnable);
+                } else {
                     runnable.run();
+                }
             });
         } catch (Exception e) {
             throw new SignGUIException("Failed to open sign gui", e);

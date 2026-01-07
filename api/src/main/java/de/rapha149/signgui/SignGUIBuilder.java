@@ -168,7 +168,10 @@ public class SignGUIBuilder {
     }
 
     /**
-     * If called the handler will be called synchronously by calling the method {@link org.bukkit.scheduler.BukkitScheduler#runTask(Plugin, Runnable)}
+     * If called the handler will be called synchronously by using the appropriate scheduler.
+     * This is required for Folia, CanvasMC, and Archlight support and ensures thread-safe execution.
+     * On Folia, tasks are scheduled on the player's region thread.
+     * On Bukkit/Spigot/Paper, tasks are scheduled on the main thread.
      *
      * @param plugin Your {@link org.bukkit.plugin.java.JavaPlugin} instance.
      * @return The {@link SignGUIBuilder} instance

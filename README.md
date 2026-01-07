@@ -3,6 +3,14 @@ An api to get input text via a sign in Minecraft.
 The api supports the Minecraft versions from `1.8` to `1.21`.  
 Also supports adventure text and mojang-mapped Paper plugins (1.20.5+).
 
+## ✨ Full Platform Support
+- ✅ **Bukkit / Spigot / Paper** - Full support
+- ✅ **Folia** - Complete regionized multithreading support
+- ✅ **CanvasMC** - Full support
+- ✅ **Archlight** - Full support (Forge+Bukkit hybrid)
+
+SignGUI automatically detects your server platform and uses the appropriate scheduler for thread-safe operation!
+
 ## Integration
 
 Maven dependency:
@@ -120,6 +128,10 @@ try {
             return Collections.emptyList();
         })
     
+        // RECOMMENDED: Call handler synchronously for thread safety
+        // REQUIRED for Folia, CanvasMC, and Archlight
+        .callHandlerSynchronously(this) // "this" = your JavaPlugin instance
+    
         // build the SignGUI
         .build();
     
@@ -134,6 +146,8 @@ try {
 ```
 
 You don't have to call all methods. Only `setHandler` is mandatory.
+
+**Important for Folia/CanvasMC/Archlight:** Always use `callHandlerSynchronously(plugin)` to ensure thread-safe operation on all platforms. On Folia, this ensures tasks run on the correct region thread. On other platforms, it ensures tasks run on the main thread.
 
 By default, the handler is called by an asynchronous thread. You can change that behaviour by calling the method `callHandlerSynchronously` of the builder.
 An explanation for the different methods can be found on the [Javadoc](https://javadoc.io/doc/de.rapha149.signgui/signgui).
