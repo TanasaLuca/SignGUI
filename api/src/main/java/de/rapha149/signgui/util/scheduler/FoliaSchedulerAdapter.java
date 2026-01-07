@@ -80,9 +80,19 @@ public class FoliaSchedulerAdapter implements SchedulerAdapter {
             isOwnedByCurrentRegion = regionizedServerClass.getMethod("isOwnedByCurrentRegion", Location.class);
             
             available = true;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Warning: Required Folia/Paper scheduler class not found while initializing FoliaSchedulerAdapter: "
+                    + e.getMessage());
+            System.err.println("Falling back to Bukkit scheduler. This usually indicates a Folia/Paper version incompatibility or that Folia is not present.");
+            e.printStackTrace(System.err);
+        } catch (NoSuchMethodException e) {
+            System.err.println("Warning: Required Folia/Paper scheduler method not found while initializing FoliaSchedulerAdapter: "
+                    + e.getMessage());
+            System.err.println("Falling back to Bukkit scheduler. This usually indicates a Folia/Paper or Bukkit API version incompatibility.");
+            e.printStackTrace(System.err);
         } catch (Exception e) {
-            System.err.println("Warning: Folia classes not found, but FoliaSchedulerAdapter was attempted to be used. " +
-                             "This should not happen. Falling back to Bukkit scheduler.");
+            System.err.println("Warning: Unexpected error while initializing FoliaSchedulerAdapter. Falling back to Bukkit scheduler.");
+            e.printStackTrace(System.err);
         }
         
         FOLIA_AVAILABLE = available;
@@ -154,7 +164,11 @@ public class FoliaSchedulerAdapter implements SchedulerAdapter {
         try {
             boolean isOwned = (boolean) IS_OWNED_BY_CURRENT_REGION_METHOD.invoke(null, location);
             if (isOwned) {
-                task.run();
+                try {
+                    task.run();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
                 return;
             }
             
@@ -191,14 +205,12 @@ public class FoliaSchedulerAdapter implements SchedulerAdapter {
         
         try {
             Object globalScheduler = GET_GLOBAL_REGION_SCHEDULER_METHOD.invoke(Bukkit.getServer());
-            Object asyncScheduler = GET_ASYNC_SCHEDULER_METHOD.invoke(Bukkit.getServer());
-            long delayMillis = delayTicks * 50L;
             
-            Method asyncRunDelayed = ASYNC_SCHEDULER_CLASS.getMethod("runDelayed", 
-                    org.bukkit.plugin.Plugin.class, java.util.function.Consumer.class, long.class, TimeUnit.class);
-            asyncRunDelayed.invoke(asyncScheduler, plugin, 
-                    (java.util.function.Consumer<Object>) scheduledTask -> runTask(plugin, task), 
-                    delayMillis, TimeUnit.MILLISECONDS);
+            Method globalRunDelayed = globalScheduler.getClass().getMethod("runDelayed",
+                    org.bukkit.plugin.Plugin.class, java.util.function.Consumer.class, long.class);
+            globalRunDelayed.invoke(globalScheduler, plugin,
+                    (java.util.function.Consumer<Object>) scheduledTask -> task.run(),
+                    delayTicks);
         } catch (Exception e) {
             e.printStackTrace();
             fallbackScheduler().runTaskLater(plugin, task, delayTicks);
@@ -244,10 +256,9 @@ public class FoliaSchedulerAdapter implements SchedulerAdapter {
         if (!FOLIA_AVAILABLE) {
             return fallbackScheduler().isOnMainThread();
         }
-        
-        // On Folia, there is no single main thread - we're always on a valid region thread
-        // if we're executing game logic
-        return true;
+        // On Folia, there is no single main thread; use Bukkit's primary thread check,
+        // which returns true on region/global region threads and false on async threads.
+        return Bukkit.isPrimaryThread();
     }
     
     /**

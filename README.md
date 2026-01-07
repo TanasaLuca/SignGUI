@@ -129,7 +129,7 @@ try {
         })
     
         // RECOMMENDED: Call handler synchronously for thread safety
-        // REQUIRED for Folia, CanvasMC, and Archlight
+        // REQUIRED for Folia; RECOMMENDED for CanvasMC, Archlight, and other platforms
         .callHandlerSynchronously(this) // "this" = your JavaPlugin instance
     
         // build the SignGUI
@@ -147,7 +147,7 @@ try {
 
 You don't have to call all methods. Only `setHandler` is mandatory.
 
-**Important for Folia/CanvasMC/Archlight:** Always use `callHandlerSynchronously(plugin)` to ensure thread-safe operation on all platforms. On Folia, this ensures tasks run on the correct region thread. On other platforms, it ensures tasks run on the main thread.
+**Important:** `callHandlerSynchronously(plugin)` is **REQUIRED for Folia** and **RECOMMENDED for all other platforms for thread safety**. On Folia, this ensures tasks run on the correct region thread. On other platforms, it ensures tasks run on the main thread.
 
 By default, the handler is called by an asynchronous thread. You can change that behaviour by calling the method `callHandlerSynchronously` of the builder.
 An explanation for the different methods can be found on the [Javadoc](https://javadoc.io/doc/de.rapha149.signgui/signgui).
