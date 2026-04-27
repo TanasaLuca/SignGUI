@@ -163,6 +163,6 @@ public class MojangWrapper1_21_R5 implements VersionWrapper {
     public void closeSignEditor(Player player, SignEditor signEditor) {
         Location loc = signEditor.getLocation();
         signEditor.getPipeline().remove("SignGUI");
-        player.sendBlockChange(loc, loc.getBlock().getBlockData());
+        player.sendBlockChange(loc, Material.AIR.createBlockData());
     }
 }
